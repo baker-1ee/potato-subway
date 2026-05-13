@@ -42,7 +42,10 @@ function formatCommentTime(iso: string) {
 
 async function fetchWordByDate(date: string): Promise<Word> {
   const res = await fetch(`/api/contents/daily?date=${date}`);
-  if (!res.ok) { const e = await res.json(); throw Object.assign(new Error(e.error ?? "Error"), { status: res.status }); }
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw Object.assign(new Error((e as { error?: string }).error ?? "Error"), { status: res.status });
+  }
   return res.json();
 }
 
@@ -59,7 +62,7 @@ async function createPost(wordId: string, content: string): Promise<void> {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ wordId, content }),
   });
-  if (!res.ok) { const e = await res.json(); throw new Error(e.error ?? "Failed to post"); }
+  if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error((e as { error?: string }).error ?? "Failed to post"); }
 }
 
 export default function HomePage() {

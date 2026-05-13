@@ -25,17 +25,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ message: "가져올 데이터가 없어요.", upserted: 0 });
   }
 
-  await sql`TRUNCATE TABLE contents RESTART IDENTITY CASCADE`;
-
   const monthOrderMap = new Map<string, number>();
-  const toInsert = rows.map((row) => {
+  const newRows = rows.map((row) => {
     const next = (monthOrderMap.get(row.monthKey) ?? 0) + 1;
     monthOrderMap.set(row.monthKey, next);
     return {
       word: row.word,
       meaning_ko: row.meaning.ko,
       meaning_en: row.meaning.en,
-      examples: sql.json(row.examples),
+      examples: row.examples,
       publish_date: row.publishDate,
       month_key: row.monthKey,
       order: next,
@@ -43,7 +41,59 @@ export async function POST(request: NextRequest) {
     };
   });
 
-  const result = await sql`INSERT INTO contents ${sql(toInsert)} RETURNING id`;
+  const count = await sql.begin(async (sql) => {
+    const existing = await sql`SELECT id, publish_date::text AS publish_date FROM contents`;
+    const existingMap = new Map(existing.map((r) => [r.publish_date as string, r.id as string]));
 
-  return NextResponse.json({ message: "임포트 완료!", upserted: result.length });
+    const newDates = newRows.map((r) => r.publish_date);
+
+    // 노션에서 사라진 날짜의 row 삭제 (posts는 CASCADE로 자동 삭제)
+    await sql`DELETE FROM contents WHERE NOT (publish_date::text = ANY(${newDates}::text[]))`;
+
+    const toUpdate: Array<typeof newRows[number] & { id: string }> = [];
+    const toInsert: typeof newRows = [];
+
+    for (const row of newRows) {
+      const existingId = existingMap.get(row.publish_date);
+      if (existingId) toUpdate.push({ ...row, id: existingId });
+      else toInsert.push(row);
+    }
+
+    if (toUpdate.length > 0) {
+      // UNIQUE(month_key, order) 충돌 방지: 임시로 order를 큰 값으로 이동 후 실제 값으로 업데이트
+      await sql`UPDATE contents SET "order" = "order" + 1000000 WHERE id = ANY(${toUpdate.map((r) => r.id)})`;
+      for (const row of toUpdate) {
+        await sql`
+          UPDATE contents SET
+            word        = ${row.word},
+            meaning_ko  = ${row.meaning_ko},
+            meaning_en  = ${row.meaning_en},
+            examples    = ${sql.json(row.examples)},
+            month_key   = ${row.month_key},
+            "order"     = ${row.order},
+            is_active   = ${row.is_active},
+            updated_at  = now()
+          WHERE id = ${row.id}
+        `;
+      }
+    }
+
+    if (toInsert.length > 0) {
+      const insertData = toInsert.map((r) => ({
+        word: r.word,
+        meaning_ko: r.meaning_ko,
+        meaning_en: r.meaning_en,
+        examples: sql.json(r.examples),
+        publish_date: r.publish_date,
+        month_key: r.month_key,
+        order: r.order,
+        is_active: r.is_active,
+      }));
+      await sql`INSERT INTO contents ${sql(insertData)}`;
+    }
+
+    return toUpdate.length + toInsert.length;
+  });
+
+  return NextResponse.json({ message: "임포트 완료!", upserted: count });
 }
