@@ -56,6 +56,16 @@ async function fetchPostsByWordId(wordId: string): Promise<Post[]> {
   return data.posts ?? [];
 }
 
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
+function trackEvent(name: string, params?: Record<string, unknown>) {
+  window.gtag?.("event", name, params);
+}
+
 async function createPost(wordId: string, content: string): Promise<void> {
   const res = await fetch("/api/posts", {
     method: "POST",
@@ -129,6 +139,7 @@ export default function HomePage() {
     setSwipeDir(dir);
     setAnimKey((k) => k + 1);
     setExampleIndex(nextIndex);
+    trackEvent("example_swipe", { direction: dir, word: word?.word });
   }
 
   function handleTouchStart(e: React.TouchEvent) { touchStartX.current = e.touches[0].clientX; }
@@ -156,6 +167,7 @@ export default function HomePage() {
     setSubmitting(true);
     try {
       await createPost(id, text);
+      trackEvent("comment_submit", { word: word?.word });
       setCommentText("");
       setSubmitted(true);
       setTimeout(() => setSubmitted(false), 2000);
