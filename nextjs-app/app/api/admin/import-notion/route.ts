@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import sql from "@/lib/db";
 import { fetchNotionRows } from "@/lib/notionImport";
 
+export const maxDuration = 60; // Vercel 함수 최대 실행 시간 60초
+
 export async function POST(request: NextRequest) {
   const token = process.env.NOTION_TOKEN;
   if (!token) {
