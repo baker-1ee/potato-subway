@@ -42,13 +42,14 @@ export async function POST(request: NextRequest) {
   });
 
   const count = await sql.begin(async (sql) => {
-    const existing = await sql`SELECT id, publish_date::text AS publish_date FROM contents`;
+    // publish_date가 timestamptz이므로 date로 캐스팅 후 text 변환 (YYYY-MM-DD)
+    const existing = await sql`SELECT id, TO_CHAR(publish_date, 'YYYY-MM-DD') AS publish_date FROM contents`;
     const existingMap = new Map(existing.map((r) => [r.publish_date as string, r.id as string]));
 
     const newDates = newRows.map((r) => r.publish_date);
 
     // 노션에서 사라진 날짜의 row 삭제 (posts는 CASCADE로 자동 삭제)
-    await sql`DELETE FROM contents WHERE NOT (publish_date::text = ANY(${newDates}::text[]))`;
+    await sql`DELETE FROM contents WHERE NOT (TO_CHAR(publish_date, 'YYYY-MM-DD') = ANY(${newDates}::text[]))`;
 
     const toUpdate: Array<typeof newRows[number] & { id: string }> = [];
     const toInsert: typeof newRows = [];
@@ -60,8 +61,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (toUpdate.length > 0) {
-      // UNIQUE(month_key, order) 충돌 방지: 임시로 order를 큰 값으로 이동 후 실제 값으로 업데이트
-      await sql`UPDATE contents SET "order" = "order" + 1000000 WHERE id = ANY(${toUpdate.map((r) => r.id)})`;
+      // UNIQUE(month_key, order) 충돌 방지: 한 번에 order를 큰 값으로 이동 후 실제 값으로 업데이트
+      await sql`UPDATE contents SET "order" = "order" + 10000 WHERE id = ANY(${toUpdate.map((r) => r.id)})`;
       for (const row of toUpdate) {
         await sql`
           UPDATE contents SET
