@@ -3,11 +3,13 @@ export function localDateKey(d = new Date()) {
 }
 
 export function formatHeaderDate(isoDate: string) {
-  const [y, m, d] = isoDate.split("-").map(Number);
-  if (!y || !m || !d) return isoDate;
+  // "2026-06-07T00:00:00.000Z" 형태도 처리
+  const dateOnly = isoDate.slice(0, 10);
+  const [y, m, d] = dateOnly.split("-").map(Number);
+  if (!y || !m || !d) return dateOnly;
   const dt = new Date(y, m - 1, d);
   const w = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][dt.getDay()];
-  return `${isoDate} (${w})`;
+  return `${dateOnly} (${w})`;
 }
 
 export function isWeekend(d = new Date()) {
