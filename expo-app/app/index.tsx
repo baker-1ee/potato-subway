@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -10,6 +9,7 @@ import {
   TextInput,
   View,
 } from "react-native";
+import { LoadingScreen } from "../src/components/LoadingScreen";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
@@ -102,6 +102,7 @@ export default function HomePage() {
   );
 
   return (
+    <>
     <SafeAreaView style={s.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
         <FlatList
@@ -128,12 +129,7 @@ export default function HomePage() {
                 )}
               </View>
 
-              {/* Loading */}
-              {loading && (
-                <View style={s.center}>
-                  <ActivityIndicator size="large" color="#111" />
-                </View>
-              )}
+              {/* Loading - LoadingScreen은 absolute overlay로 렌더 */}
 
               {/* Error */}
               {!loading && error && (
@@ -254,6 +250,8 @@ export default function HomePage() {
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
+    <LoadingScreen visible={!loading} />
+    </>
   );
 }
 
