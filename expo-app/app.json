@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Potato on the Subway",
-    "slug": "potato-subway",
+    "slug": "subway-potato",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
