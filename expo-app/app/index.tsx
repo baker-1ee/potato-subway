@@ -36,6 +36,9 @@ export default function HomePage() {
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const flatListRef = useRef<FlatList>(null);
+  const noteInputRef = useRef<TextInput>(null);
+
   const load = useCallback(async (publishDate: string) => {
     setLoading(true);
     setError(null);
@@ -104,8 +107,9 @@ export default function HomePage() {
   return (
     <>
     <SafeAreaView style={s.safe}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 24}>
         <FlatList
+          ref={flatListRef}
           data={sortedPosts}
           keyExtractor={(p) => p.id}
           contentContainerStyle={s.scroll}
@@ -195,6 +199,7 @@ export default function HomePage() {
                     <Text style={s.sectionLabel}>Leave a note</Text>
                     <View style={s.noteRow}>
                       <TextInput
+                        ref={noteInputRef}
                         style={s.noteInput}
                         placeholder="Try today's word"
                         placeholderTextColor="#aaa"
@@ -205,6 +210,11 @@ export default function HomePage() {
                         returnKeyType="send"
                         onSubmitEditing={handleSubmit}
                         autoCorrect={false}
+                        onFocus={() => {
+                          setTimeout(() => {
+                            flatListRef.current?.scrollToEnd({ animated: true });
+                          }, 300);
+                        }}
                       />
                       <Pressable
                         style={[s.noteSubmit, submitted && s.noteSubmitDropped, (!commentText.trim() || submitting) && s.noteSubmitDisabled]}
