@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Potato on the Subway",
+    "slug": "potato-subway",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "potato-subway",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hanseul2.potatosubway"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.hanseul2.potatosubway"
+    },
+    "web": {
+      "bundler": "metro",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-system-ui"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "805d1e96-80e2-419b-b5d7-af84610219dc"
+      }
+    }
+  }
+}
