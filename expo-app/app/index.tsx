@@ -39,6 +39,7 @@ export default function HomePage() {
 
   const flatListRef = useRef<FlatList>(null);
   const noteInputRef = useRef<TextInput>(null);
+  const noteSectionOffsetY = useRef<number>(0);
 
   const load = useCallback(async (publishDate: string) => {
     setLoading(true);
@@ -196,7 +197,10 @@ export default function HomePage() {
                   </View>
 
                   {/* Leave a note */}
-                  <View style={s.section}>
+                  <View
+                    style={s.section}
+                    onLayout={(e) => { noteSectionOffsetY.current = e.nativeEvent.layout.y; }}
+                  >
                     <Text style={s.sectionLabel}>Leave a note</Text>
                     <View style={s.noteRow}>
                       <TextInput
@@ -211,9 +215,14 @@ export default function HomePage() {
                         returnKeyType="send"
                         onSubmitEditing={handleSubmit}
                         autoCorrect={false}
+                        multiline
+                        scrollEnabled={false}
                         onFocus={() => {
                           setTimeout(() => {
-                            flatListRef.current?.scrollToEnd({ animated: true });
+                            flatListRef.current?.scrollToOffset({
+                              offset: noteSectionOffsetY.current - 16,
+                              animated: true,
+                            });
                           }, 300);
                         }}
                       />
@@ -316,9 +325,9 @@ const s = StyleSheet.create({
   emptyText: { fontSize: 13, color: LIGHT, fontStyle: "italic" },
 
   // Note form
-  noteRow: { flexDirection: "row", gap: 8, alignItems: "center" },
-  noteInput: { flex: 1, backgroundColor: CARD, borderWidth: 1, borderColor: "#e0e0de", borderRadius: 4, paddingHorizontal: 14, paddingVertical: 12, fontSize: 13, color: "#333" },
-  noteSubmit: { backgroundColor: TEXT, borderRadius: 4, paddingHorizontal: 18, paddingVertical: 12 },
+  noteRow: { flexDirection: "row", gap: 8, alignItems: "flex-end" },
+  noteInput: { flex: 1, backgroundColor: CARD, borderWidth: 1, borderColor: "#e0e0de", borderRadius: 4, paddingHorizontal: 14, paddingVertical: 12, fontSize: 13, color: "#333", minHeight: 44, maxHeight: 120, lineHeight: 20 },
+  noteSubmit: { backgroundColor: TEXT, borderRadius: 4, paddingHorizontal: 18, paddingVertical: 12, minHeight: 44, justifyContent: "center", alignItems: "center" },
   noteSubmitDropped: { backgroundColor: "#555" },
   noteSubmitDisabled: { opacity: 0.35 },
   noteSubmitText: { color: "#fff", fontWeight: "600", fontSize: 13 },
