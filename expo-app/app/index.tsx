@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   FlatList,
   Image,
   KeyboardAvoidingView,
@@ -221,7 +222,10 @@ export default function HomePage() {
                         onPress={handleSubmit}
                         disabled={!commentText.trim() || submitting}
                       >
-                        <Text style={s.noteSubmitText}>{submitted ? "Dropped ✓" : "Drop It"}</Text>
+                        {submitting
+                          ? <ActivityIndicator size="small" color="#fff" />
+                          : <Text style={s.noteSubmitText}>{submitted ? "Dropped ✓" : "Drop It"}</Text>
+                        }
                       </Pressable>
                     </View>
                     {commentText.length > 0 && (
@@ -260,7 +264,7 @@ export default function HomePage() {
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
-    <LoadingScreen visible={!loading} />
+    <LoadingScreen visible={loading} />
     </>
   );
 }
