@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { LoadingScreen } from "../src/components/LoadingScreen";
+import { DatePickerModal } from "../src/components/DatePickerModal";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
@@ -46,6 +47,7 @@ export default function HomePage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [calendarVisible, setCalendarVisible] = useState(false);
 
   const flatListRef = useRef<FlatList>(null);
   const noteInputRef = useRef<TextInput>(null);
@@ -131,10 +133,12 @@ export default function HomePage() {
               {/* Header */}
               <View style={s.header}>
                 <Text style={s.title}>Potato on the Subway</Text>
-                {word
-                  ? <Text style={s.dateLabel}>{formatHeaderDate(word.publish_date)}</Text>
-                  : <Text style={s.dateLabel}>{formatHeaderDate(date)}</Text>
-                }
+                <Pressable onPress={() => setCalendarVisible(true)} style={s.dateLabelBtn}>
+                  {word
+                    ? <Text style={s.dateLabel}>{formatHeaderDate(word.publish_date)}</Text>
+                    : <Text style={s.dateLabel}>{formatHeaderDate(date)}</Text>
+                  }
+                </Pressable>
                 {/* 평일 hero는 단어 있을 때만 */}
                 {!loading && !noContent && !error && word && (
                   <Image
@@ -284,6 +288,12 @@ export default function HomePage() {
       </KeyboardAvoidingView>
     </SafeAreaView>
     <LoadingScreen visible={loading} />
+    <DatePickerModal
+      visible={calendarVisible}
+      onClose={() => setCalendarVisible(false)}
+      onSelect={(d) => { load(d); flatListRef.current?.scrollToOffset({ offset: 0, animated: false }); }}
+      today={date}
+    />
     </>
   );
 }
@@ -302,8 +312,9 @@ const s = StyleSheet.create({
   // Header
   header: { paddingTop: 28, paddingHorizontal: 24, paddingBottom: 0, alignItems: "center" },
   title: { fontSize: 15, fontWeight: "700", color: TEXT, letterSpacing: -0.2 },
-  dateLabel: { fontSize: 13, color: "#aaa", marginTop: 4 },
-  heroImg: { width: "72%", maxWidth: 240, height: 160, marginTop: 24 },
+  dateLabelBtn: { marginTop: 4 },
+  dateLabel: { fontSize: 13, color: "#aaa" },
+  heroImg: { width: "100%", maxWidth: 400, height: 300, marginTop: 0 },
 
   // Loading / error
   center: { alignItems: "center", paddingVertical: 48 },

@@ -40,6 +40,15 @@ export async function fetchPostsByWordId(wordId: string): Promise<Post[]> {
   return data.posts ?? [];
 }
 
+export async function fetchAvailableDatesForMonth(monthKey: string): Promise<string[]> {
+  try {
+    const data = await request<{ publish_date: string }[]>(`/api/contents/month/${monthKey}`);
+    return (Array.isArray(data) ? data : []).map((c) => c.publish_date.slice(0, 10));
+  } catch {
+    return [];
+  }
+}
+
 export function createPost(wordId: string, content: string): Promise<Post> {
   return request("/api/posts", {
     method: "POST",
