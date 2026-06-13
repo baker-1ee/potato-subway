@@ -44,7 +44,9 @@ export async function POST(request: NextRequest) {
     };
   });
 
-  const count = await sql.begin(async (sql) => {
+  let count: number;
+  try {
+  count = await sql.begin(async (sql) => {
     const newDates = newRows.map((r) => r.publish_date);
 
     // 1) 노션에서 사라진 날짜 삭제 + 기존 row 조회 (병렬)
@@ -125,6 +127,11 @@ export async function POST(request: NextRequest) {
 
     return toUpdate.length + toInsert.length;
   });
+  } catch (e) {
+    const msg = (e as Error).message ?? String(e);
+    console.error("Import error:", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
 
   return NextResponse.json({ message: "임포트 완료!", upserted: count });
 }
