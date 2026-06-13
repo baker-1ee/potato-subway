@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, StyleSheet, Text, View } from "react-native";
+import { Animated, Modal, Platform, StyleSheet, View } from "react-native";
 
 const LINES = [
   "Steaming potatoes...",
@@ -28,6 +28,14 @@ export function LoadingScreen({ visible }: { visible: boolean }) {
     ).start();
   }, [shimmer]);
 
+  // reset when loading starts again
+  useEffect(() => {
+    if (visible) {
+      setHidden(false);
+      opacity.setValue(1);
+    }
+  }, [visible]);
+
   // fade-out when content is ready
   useEffect(() => {
     if (!visible) {
@@ -49,13 +57,24 @@ export function LoadingScreen({ visible }: { visible: boolean }) {
     outputRange: ["#bbb", "#bbb", "#111", "#bbb", "#bbb"],
   });
 
-  return (
+  const inner = (
     <Animated.View style={[s.container, { opacity }]}>
       <View style={s.inner}>
         <Animated.Text style={[s.text, { color }]}>{text}</Animated.Text>
       </View>
     </Animated.View>
   );
+
+  // 네이티브에서는 Modal로 감싸야 zIndex 문제 없이 항상 위에 뜸
+  if (Platform.OS !== "web") {
+    return (
+      <Modal transparent statusBarTranslucent visible={!hidden} animationType="none">
+        {inner}
+      </Modal>
+    );
+  }
+
+  return inner;
 }
 
 const s = StyleSheet.create({

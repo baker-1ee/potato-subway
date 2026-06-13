@@ -312,7 +312,7 @@ const s = StyleSheet.create({
   // Header
   header: { paddingTop: 28, paddingHorizontal: 24, paddingBottom: 0, alignItems: "center" },
   title: { fontSize: 15, fontWeight: "700", color: TEXT, letterSpacing: -0.2 },
-  dateLabelBtn: { marginTop: 4 },
+  dateLabelBtn: { marginTop: 4, paddingVertical: 10, paddingHorizontal: 20 },
   dateLabel: { fontSize: 13, color: "#aaa" },
   heroImg: { width: "100%", maxWidth: 400, height: 300, marginTop: 0 },
 
