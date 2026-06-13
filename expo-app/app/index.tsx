@@ -24,6 +24,16 @@ function displayWord(w: string) {
 
 export default function HomePage() {
   const date = localDateKey();
+
+  const heroImages = [
+    require("../assets/heroes/hero_weekday.png"),
+    require("../assets/heroes/hero_weekday_fan.png"),
+    require("../assets/heroes/hero_weekday_sunbed.png"),
+    require("../assets/heroes/hero_weekday_walk.png"),
+    require("../assets/heroes/hero_weekday_water.png"),
+  ];
+  const [heroImg] = useState(() => heroImages[Math.floor(Math.random() * heroImages.length)]);
+
   const [word, setWord] = useState<Word | null>(null);
   const [loading, setLoading] = useState(true);
   const [noContent, setNoContent] = useState(false);
@@ -128,7 +138,7 @@ export default function HomePage() {
                 {/* 평일 hero는 단어 있을 때만 */}
                 {!loading && !noContent && !error && word && (
                   <Image
-                    source={require("../assets/heroes/hero_weekday.png")}
+                    source={heroImg}
                     style={s.heroImg}
                     resizeMode="contain"
                   />
