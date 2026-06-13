@@ -23,18 +23,22 @@ function displayWord(w: string) {
   return w ? w.charAt(0).toUpperCase() + w.slice(1) : "";
 }
 
+const HERO_IMAGES = [
+  require("../assets/heroes/hero_weekday.png"),
+  require("../assets/heroes/hero_weekday_fan.png"),
+  require("../assets/heroes/hero_weekday_sunbed.png"),
+  require("../assets/heroes/hero_weekday_walk.png"),
+  require("../assets/heroes/hero_weekday_water.png"),
+  require("../assets/heroes/hero_weekday_keyboard.png"),
+];
+
+function randomHero() {
+  return HERO_IMAGES[Math.floor(Math.random() * HERO_IMAGES.length)];
+}
+
 export default function HomePage() {
   const date = localDateKey();
-
-  const heroImages = [
-    require("../assets/heroes/hero_weekday.png"),
-    require("../assets/heroes/hero_weekday_fan.png"),
-    require("../assets/heroes/hero_weekday_sunbed.png"),
-    require("../assets/heroes/hero_weekday_walk.png"),
-    require("../assets/heroes/hero_weekday_water.png"),
-    require("../assets/heroes/hero_weekday_keyboard.png"),
-  ];
-  const [heroImg] = useState(() => heroImages[Math.floor(Math.random() * heroImages.length)]);
+  const [heroImg, setHeroImg] = useState(() => randomHero());
 
   const [word, setWord] = useState<Word | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +75,12 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => { load(date); }, [date, load]);
-  useEffect(() => { setExampleIndex(0); setFormError(null); setCommentText(""); }, [word?.id]);
+  useEffect(() => {
+    setExampleIndex(0);
+    setFormError(null);
+    setCommentText("");
+    setHeroImg(randomHero());
+  }, [word?.id]);
 
   useEffect(() => {
     const id = word?.id;

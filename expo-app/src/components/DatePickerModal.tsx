@@ -17,6 +17,14 @@ const LIGHT = "#ddd";
 
 const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAY_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function formatSelectedDate(dateStr: string) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(y, m - 1, d);
+  return `${DAY_SHORT[dt.getDay()]}, ${MONTH_SHORT[m - 1]} ${d}`;
+}
 
 function monthKey(year: number, month: number) {
   return `${year}-${String(month + 1).padStart(2, "0")}`;
@@ -117,7 +125,7 @@ export function DatePickerModal({ visible, onClose, onSelect, today }: Props) {
             <View style={s.header}>
               <Text style={s.headerTitle}>Select date</Text>
               <Text style={s.headerSub}>
-                {MONTH_NAMES[viewMonth]} {viewYear}
+                {formatSelectedDate(selected ?? today)}
               </Text>
             </View>
 
