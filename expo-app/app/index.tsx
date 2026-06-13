@@ -32,6 +32,7 @@ export default function HomePage() {
     require("../assets/heroes/hero_weekday_sunbed.png"),
     require("../assets/heroes/hero_weekday_walk.png"),
     require("../assets/heroes/hero_weekday_water.png"),
+    require("../assets/heroes/hero_weekday_keyboard.png"),
   ];
   const [heroImg] = useState(() => heroImages[Math.floor(Math.random() * heroImages.length)]);
 
