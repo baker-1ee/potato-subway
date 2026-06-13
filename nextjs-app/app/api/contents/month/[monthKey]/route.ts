@@ -12,8 +12,8 @@ export async function GET(
 
   const rows = await sql`
     SELECT * FROM contents
-    WHERE month_key = ${monthKey} AND is_active = true
-    ORDER BY "order" ASC
+    WHERE TO_CHAR(publish_date, 'YYYY-MM') = ${monthKey} AND is_active = true
+    ORDER BY publish_date ASC
   `;
 
   return NextResponse.json(rows);
