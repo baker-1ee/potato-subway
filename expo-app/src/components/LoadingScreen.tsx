@@ -69,7 +69,11 @@ export function LoadingScreen({ visible }: { visible: boolean }) {
   if (Platform.OS !== "web") {
     return (
       <Modal transparent statusBarTranslucent visible={!hidden} animationType="none">
-        {inner}
+        <Animated.View style={[s.containerNative, { opacity }]}>
+          <View style={s.inner}>
+            <Animated.Text style={[s.text, { color }]}>{text}</Animated.Text>
+          </View>
+        </Animated.View>
       </Modal>
     );
   }
@@ -78,6 +82,12 @@ export function LoadingScreen({ visible }: { visible: boolean }) {
 }
 
 const s = StyleSheet.create({
+  containerNative: {
+    flex: 1,
+    backgroundColor: BG,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   container: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: BG,
