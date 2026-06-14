@@ -195,7 +195,7 @@ export default function HomePage() {
                   {/* How it's used */}
                   <View style={s.section}>
                     <View style={s.sectionLabelRow}>
-                      <Text style={s.sectionLabel}>How it's used</Text>
+                      <Text style={s.sectionLabelInRow}>How it's used</Text>
                       {examples.length > 1 && (
                         <View style={s.dots}>
                           {examples.map((_, i) => (
@@ -339,7 +339,8 @@ const s = StyleSheet.create({
   // Sections
   section: { paddingHorizontal: 20, marginBottom: 40 },
   sectionLabelRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
-  sectionLabel: { fontSize: 11, color: "#999", letterSpacing: 1, textTransform: "uppercase", fontWeight: "500", marginBottom: 12 },
+  sectionLabel: { fontSize: 11, color: "#999", letterSpacing: 1, textTransform: "uppercase", fontWeight: "500", marginBottom: 12, lineHeight: 14 },
+  sectionLabelInRow: { fontSize: 11, color: "#999", letterSpacing: 1, textTransform: "uppercase", fontWeight: "500", lineHeight: 14 },
 
   // Dots
   dots: { flexDirection: "row", gap: 5, alignItems: "center" },
@@ -358,7 +359,7 @@ const s = StyleSheet.create({
   // Note form
   noteRow: { flexDirection: "row", gap: 8, alignItems: "flex-end" },
   noteInput: { flex: 1, backgroundColor: CARD, borderWidth: 1, borderColor: "#e0e0de", borderRadius: 4, paddingHorizontal: 14, paddingVertical: 12, fontSize: 13, color: "#333", minHeight: 44, maxHeight: 120, lineHeight: 20 },
-  noteSubmit: { backgroundColor: TEXT, borderRadius: 4, paddingHorizontal: 18, paddingVertical: 12, minHeight: 44, justifyContent: "center", alignItems: "center" },
+  noteSubmit: { backgroundColor: TEXT, borderRadius: 999, paddingHorizontal: 20, paddingVertical: 12, minHeight: 44, justifyContent: "center", alignItems: "center" },
   noteSubmitDropped: { backgroundColor: "#555" },
   noteSubmitDisabled: { opacity: 0.35 },
   noteSubmitText: { color: "#fff", fontWeight: "600", fontSize: 13 },
