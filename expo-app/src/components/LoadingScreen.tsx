@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Animated, Modal, Platform, StyleSheet, View } from "react-native";
+import { Animated, Easing, Modal, Platform, StyleSheet, Text, View } from "react-native";
 
 const LINES = [
   "Steaming potatoes...",
@@ -17,21 +17,35 @@ function randomLine() {
 
 export function LoadingScreen({ visible }: { visible: boolean }) {
   const [text, setText] = useState(() => randomLine());
-  const fadeOut = useRef(new Animated.Value(1)).current; // 전체 화면 opacity (fade-out용)
-  const shimmer = useRef(new Animated.Value(0)).current; // 텍스트 shimmer (0=dim, 1=bright)
+  const fadeOut = useRef(new Animated.Value(1)).current;
   const [hidden, setHidden] = useState(false);
 
-  // shimmer 루프
+  // 웹용: CSS transition으로 색상 토글
+  const [bright, setBright] = useState(false);
+
+  // 네이티브용: Animated shimmer
+  const shimmer = useRef(new Animated.Value(0)).current;
+
+  // 웹: setInterval로 색상 토글
   useEffect(() => {
+    if (Platform.OS !== "web") return;
+    const id = setInterval(() => setBright((b) => !b), 700);
+    return () => clearInterval(id);
+  }, []);
+
+  // 네이티브: Animated loop
+  useEffect(() => {
+    if (Platform.OS === "web") return;
     Animated.loop(
       Animated.sequence([
-        Animated.timing(shimmer, { toValue: 1, duration: 600, useNativeDriver: true }),
-        Animated.timing(shimmer, { toValue: 0, duration: 600, useNativeDriver: true }),
+        Animated.timing(shimmer, { toValue: 1, duration: 900, easing: Easing.inOut(Easing.ease), useNativeDriver: false }),
+        Animated.delay(100),
+        Animated.timing(shimmer, { toValue: 0, duration: 300, easing: Easing.in(Easing.ease), useNativeDriver: false }),
+        Animated.delay(200),
       ])
     ).start();
   }, []);
 
-  // 로딩 재시작 시 리셋
   useEffect(() => {
     if (visible) {
       setText(randomLine());
@@ -40,7 +54,6 @@ export function LoadingScreen({ visible }: { visible: boolean }) {
     }
   }, [visible]);
 
-  // 콘텐츠 준비되면 페이드아웃
   useEffect(() => {
     if (!visible) {
       const t = setTimeout(() => {
@@ -53,63 +66,42 @@ export function LoadingScreen({ visible }: { visible: boolean }) {
 
   if (hidden) return null;
 
-  const content = (
-    <Animated.View style={[s.fill, { opacity: fadeOut }]}>
-      {/* dim 텍스트 (베이스) */}
-      <View style={s.center}>
-        <Animated.Text style={[s.text, s.textDim, { opacity: shimmer.interpolate({ inputRange: [0, 1], outputRange: [1, 0] }) }]}>
-          {text}
-        </Animated.Text>
-        {/* bright 텍스트 (overlay) */}
-        <Animated.Text style={[s.text, s.textBright, { opacity: shimmer }]}>
-          {text}
-        </Animated.Text>
-      </View>
-    </Animated.View>
-  );
-
-  if (Platform.OS !== "web") {
+  // 웹 렌더
+  if (Platform.OS === "web") {
     return (
-      <Modal transparent statusBarTranslucent visible={!hidden} animationType="none">
-        <View style={s.modalBg}>
-          {content}
-        </View>
-      </Modal>
+      <Animated.View style={[s.webContainer, { opacity: fadeOut }]}>
+        <Text
+          style={[
+            s.text,
+            {
+              color: bright ? "#222" : "#bbb",
+              // @ts-ignore - web only CSS transition
+              transitionProperty: "color",
+              transitionDuration: "0.7s",
+              transitionTimingFunction: "ease-in-out",
+            },
+          ]}
+        >
+          {text}
+        </Text>
+      </Animated.View>
     );
   }
 
-  return <View style={s.webContainer}>{content}</View>;
+  // 네이티브 렌더
+  const color = shimmer.interpolate({ inputRange: [0, 1], outputRange: ["#bbb", "#222"] });
+
+  return (
+    <Modal transparent statusBarTranslucent visible={!hidden} animationType="none">
+      <Animated.View style={[s.modalBg, { opacity: fadeOut }]}>
+        <Animated.Text style={[s.text, { color }]}>{text}</Animated.Text>
+      </Animated.View>
+    </Modal>
+  );
 }
 
 const s = StyleSheet.create({
-  modalBg: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  webContainer: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: BG,
-    zIndex: 50,
-  },
-  fill: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  center: {
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  text: {
-    fontSize: 15,
-    fontWeight: "400",
-    letterSpacing: 0.3,
-  },
-  textDim: {
-    color: "#bbb",
-    position: "absolute",
-  },
-  textBright: {
-    color: "#111",
-  },
+  modalBg: { flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center" },
+  webContainer: { ...StyleSheet.absoluteFillObject, backgroundColor: BG, zIndex: 50, alignItems: "center", justifyContent: "center" },
+  text: { fontSize: 15, fontWeight: "400", letterSpacing: 0.3 },
 });
