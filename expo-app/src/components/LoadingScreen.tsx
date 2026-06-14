@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Animated, Modal, Platform, StyleSheet, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import MaskedView from "@react-native-masked-view/masked-view";
 
 const LINES = [
   "Steaming potatoes...",
@@ -10,84 +12,100 @@ const LINES = [
 ];
 
 const BG = "#f0f0ee";
+const TEXT_WIDTH = 220;
+
+function randomLine() {
+  return LINES[Math.floor(Math.random() * LINES.length)];
+}
 
 export function LoadingScreen({ visible }: { visible: boolean }) {
-  const [text] = useState(() => LINES[Math.floor(Math.random() * LINES.length)]);
+  const [text, setText] = useState(() => randomLine());
   const opacity = useRef(new Animated.Value(1)).current;
   const [hidden, setHidden] = useState(false);
 
-  // shimmer animation
-  const shimmer = useRef(new Animated.Value(0)).current;
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(shimmer, {
-        toValue: 1,
-        duration: 1600,
-        useNativeDriver: false,
-      })
-    ).start();
-  }, [shimmer]);
+  // 웹용: 색상 pulse
+  const pulse = useRef(new Animated.Value(0)).current;
+  // 네이티브용: 좌→우 shimmer
+  const shimmerX = useRef(new Animated.Value(-TEXT_WIDTH)).current;
 
-  // reset when loading starts again
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulse, { toValue: 1, duration: 700, useNativeDriver: false }),
+          Animated.timing(pulse, { toValue: 0, duration: 700, useNativeDriver: false }),
+        ])
+      ).start();
+    } else {
+      Animated.loop(
+        Animated.timing(shimmerX, { toValue: TEXT_WIDTH, duration: 1400, useNativeDriver: true })
+      ).start();
+    }
+  }, []);
+
   useEffect(() => {
     if (visible) {
+      setText(randomLine());
       setHidden(false);
       opacity.setValue(1);
     }
   }, [visible]);
 
-  // fade-out when content is ready
   useEffect(() => {
     if (!visible) {
-      const showTimer = setTimeout(() => {
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 700,
-          useNativeDriver: true,
-        }).start(() => setHidden(true));
+      const t = setTimeout(() => {
+        Animated.timing(opacity, { toValue: 0, duration: 700, useNativeDriver: true })
+          .start(() => setHidden(true));
       }, 1300);
-      return () => clearTimeout(showTimer);
+      return () => clearTimeout(t);
     }
   }, [visible, opacity]);
 
   if (hidden) return null;
 
-  const color = shimmer.interpolate({
-    inputRange: [0, 0.25, 0.5, 0.75, 1],
-    outputRange: ["#bbb", "#bbb", "#111", "#bbb", "#bbb"],
-  });
-
-  const inner = (
-    <Animated.View style={[s.container, { opacity }]}>
-      <View style={s.inner}>
-        <Animated.Text style={[s.text, { color }]}>{text}</Animated.Text>
-      </View>
-    </Animated.View>
-  );
-
-  // 네이티브에서는 Modal로 감싸야 zIndex 문제 없이 항상 위에 뜸
-  if (Platform.OS !== "web") {
+  // 웹: Animated.Text 색상 pulse
+  if (Platform.OS === "web") {
+    const color = pulse.interpolate({
+      inputRange: [0, 1],
+      outputRange: ["#bbb", "#111"],
+    });
     return (
-      <Modal transparent statusBarTranslucent visible={!hidden} animationType="none">
-        <Animated.View style={[s.containerNative, { opacity }]}>
-          <View style={s.inner}>
-            <Animated.Text style={[s.text, { color }]}>{text}</Animated.Text>
-          </View>
-        </Animated.View>
-      </Modal>
+      <Animated.View style={[s.container, { opacity }]}>
+        <View style={s.inner}>
+          <Animated.Text style={[s.text, { color }]}>{text}</Animated.Text>
+        </View>
+      </Animated.View>
     );
   }
 
-  return inner;
+  // 네이티브: MaskedView + LinearGradient shimmer
+  return (
+    <Modal transparent statusBarTranslucent visible={!hidden} animationType="none">
+      <Animated.View style={[s.containerNative, { opacity }]}>
+        <View style={s.inner}>
+          <MaskedView maskElement={<Animated.Text style={s.text}>{text}</Animated.Text>}>
+            <View style={s.textBase}>
+              <Animated.Text style={[s.text, { opacity: 0 }]}>{text}</Animated.Text>
+            </View>
+            <Animated.View
+              style={[StyleSheet.absoluteFillObject, { transform: [{ translateX: shimmerX }] }]}
+            >
+              <LinearGradient
+                colors={["#bbb", "#bbb", "#111", "#bbb", "#bbb"]}
+                locations={[0, 0.3, 0.5, 0.7, 1]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={{ width: TEXT_WIDTH * 2, height: 30 }}
+              />
+            </Animated.View>
+          </MaskedView>
+        </View>
+      </Animated.View>
+    </Modal>
+  );
 }
 
 const s = StyleSheet.create({
-  containerNative: {
-    flex: 1,
-    backgroundColor: BG,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   container: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: BG,
@@ -95,12 +113,18 @@ const s = StyleSheet.create({
     justifyContent: "center",
     zIndex: 50,
   },
-  inner: {
+  containerNative: {
+    flex: 1,
+    backgroundColor: BG,
     alignItems: "center",
+    justifyContent: "center",
   },
+  inner: { alignItems: "center" },
+  textBase: { backgroundColor: "#bbb" },
   text: {
     fontSize: 15,
     fontWeight: "400",
     letterSpacing: 0.3,
+    color: "#000",
   },
 });
