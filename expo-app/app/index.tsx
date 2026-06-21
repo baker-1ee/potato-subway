@@ -107,8 +107,13 @@ export default function HomePage() {
     else if (e.velocityX > 0 && exampleIndex > 0) setExampleIndex((i) => i - 1);
   });
 
+  function hasKorean(s: string) {
+    return /[가-힣ᄀ-ᇿ㄰-㆏ꥠ-꥿ힰ-퟿]/.test(s);
+  }
+
   async function handleSubmit() {
     if (!word || !commentText.trim()) return;
+    if (hasKorean(commentText)) { setFormError("한글은 입력할 수 없어요. Please write in English."); return; }
     setSubmitting(true);
     setFormError(null);
     try {

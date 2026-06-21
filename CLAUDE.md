@@ -6,20 +6,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Potato on the Subway** is a daily English vocabulary learning service built around a subway-riding potato character. Each weekday, one English word is shown with a Korean meaning, up to 3 example sentences, and an anonymous comment section where anyone can write using the word.
 
-The codebase is a **completed migration** from a Docker-based React/Vite + Express + MongoDB monorepo to a Next.js fullstack app deployed on Vercel with Supabase (PostgreSQL) as the database. Only the `nextjs-app/` directory is the active codebase.
+The codebase has two active directories:
+- `nextjs-app/` — Next.js fullstack app (web UI + API backend), deployed on Vercel with Supabase (PostgreSQL)
+- `expo-app/` — React Native (Expo) mobile app, shares the same API backend
+
+The mobile app (`expo-app/`) is the primary client. The web app serves the same content and shares all API routes.
 
 ## Commands
 
-All commands run from `nextjs-app/`:
-
+**Next.js (web + API)** — run from `nextjs-app/`:
 ```bash
-cd nextjs-app
-
-npm run dev      # Start development server (Next.js)
+npm run dev      # Start development server
 npm run build    # Production build
-npm run start    # Start production server
 npm run lint     # Run ESLint
 ```
+
+**Expo (mobile app)** — run from `expo-app/`:
+```bash
+npm run start    # Start Expo dev server
+npm run android  # Run on Android
+```
+
+**Android APK CI** — push to `main` with changes under `expo-app/` triggers GitHub Actions build. APK available in Actions → Artifacts.
 
 There are no tests configured in this project.
 
@@ -100,7 +108,7 @@ Copy `.env.example` to `.env.local` inside `nextjs-app/`:
 ## Key Conventions
 
 - **Date handling**: dates are always computed client-side using `localDateKey()` in `app/page.tsx`, which formats `new Date()` as `YYYY-MM-DD`. No timezone normalization — the displayed date matches the user's local clock.
-- **Comment input**: Korean characters are blocked client-side via Unicode range regex in `hasKorean()`. Max length is 80 chars in the UI input (the DB/API allow 2,000).
-- **Hero images**: weekday shows `hero_weekday.png`, weekend/no-content shows `hero_weekend.png` — both in `public/heroes/`. Randomized hero display from 3 images is listed as a pending feature.
+- **Comment input**: Korean characters are blocked client-side via Unicode range regex in `hasKorean()` — present in both web (`app/page.tsx`) and app (`expo-app/app/index.tsx`). Max length is 80 chars in the UI (the DB/API allow 2,000). Comments are sorted newest-first in both clients.
+- **Hero images**: 6 weekday hero images (`hero_weekday*.png`) are randomly selected on each word load in both web and app. Weekend/no-content shows `hero_weekend.png`. Images live in `nextjs-app/public/heroes/` and `expo-app/assets/heroes/`.
 - **Styling**: All main-page styles are in `app/globals.css` using plain CSS class names (`.app`, `.card`, `.comment-item`, etc.). The admin page uses Tailwind utility classes directly. shadcn/ui components in `components/ui/` are available but the main page doesn't use them.
 - **Analytics**: Google Analytics (`G-HNGFHYP53D`) is loaded in `app/layout.tsx`. Key events are tracked via `window.gtag` calls in `app/page.tsx`: `example_swipe`, `comment_submit`.

@@ -12,11 +12,6 @@ export function formatHeaderDate(isoDate: string) {
   return `${dateOnly} (${w})`;
 }
 
-export function isWeekend(d = new Date()) {
-  const day = d.getDay();
-  return day === 0 || day === 6;
-}
-
 export function formatCommentTime(iso: string) {
   return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
 }

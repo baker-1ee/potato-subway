@@ -28,6 +28,19 @@ function formatHeaderDate(isoDate: string) {
   return `${isoDate} (${w})`;
 }
 
+const HERO_IMAGES = [
+  "/heroes/hero_weekday.png",
+  "/heroes/hero_weekday_fan.png",
+  "/heroes/hero_weekday_sunbed.png",
+  "/heroes/hero_weekday_walk.png",
+  "/heroes/hero_weekday_water.png",
+  "/heroes/hero_weekday_keyboard.png",
+];
+
+function randomHero() {
+  return HERO_IMAGES[Math.floor(Math.random() * HERO_IMAGES.length)];
+}
+
 function displayWord(w: string) {
   return w ? w.charAt(0).toUpperCase() + w.slice(1) : "";
 }
@@ -77,6 +90,7 @@ async function createPost(wordId: string, content: string): Promise<void> {
 
 export default function HomePage() {
   const [date] = useState(() => localDateKey());
+  const [heroImg, setHeroImg] = useState(() => randomHero());
   const [word, setWord] = useState<Word | null>(null);
   const [loading, setLoading] = useState(true);
   const [noContent, setNoContent] = useState(false);
@@ -110,7 +124,7 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => { load(date); }, [date, load]);
-  useEffect(() => { setExampleIndex(0); }, [word?.id]);
+  useEffect(() => { setExampleIndex(0); setHeroImg(randomHero()); }, [word?.id]);
   useEffect(() => { setFormError(null); setCommentText(""); }, [word?.id]);
 
   useEffect(() => {
@@ -153,7 +167,7 @@ export default function HomePage() {
   }
 
   const sortedPosts = useMemo(() =>
-    [...posts].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+    [...posts].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()),
     [posts]
   );
 
@@ -191,7 +205,7 @@ export default function HomePage() {
           </div>
           {!noContent && !loading && !error && (
             <div className="app-hero">
-              <img src="/heroes/hero_weekday.png" alt="" decoding="async" />
+              <img src={heroImg} alt="" decoding="async" />
             </div>
           )}
         </header>
