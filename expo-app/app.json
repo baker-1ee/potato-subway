@@ -9,7 +9,7 @@
     "scheme": "potato-subway",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.hanseul2.potatosubway"
+      "bundleIdentifier": "com.jinung.potatosubway"
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +19,7 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.hanseul2.potatosubway",
+      "package": "com.jinung.potatosubway",
       "softwareKeyboardLayoutMode": "pan"
     },
     "web": {
